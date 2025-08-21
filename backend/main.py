@@ -1,25 +1,27 @@
-﻿from fastapi import FastAPI, File, UploadFile
+﻿from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-import shutil
 import os
 
 app = FastAPI()
 
-# Allow frontend to talk to backend
+# Allow frontend to communicate
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-UPLOAD_FOLDER = "uploads"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+# Root route to check backend
+@app.get("/")
+async def root():
+    return {"message": "Backend is running!"}
 
+# Upload route
 @app.post("/upload/")
-async def upload_file(file: UploadFile = File(...)):
-    file_path = os.path.join(UPLOAD_FOLDER, file.filename)
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-    return {"filename": file.filename, "message": "Upload successful!"}
+async def upload_resume(file: UploadFile = File(...)):
+    os.makedirs("uploads", exist_ok=True)
+    content = await file.read()
+    with open(f"uploads/{file.filename}", "wb") as f:
+        f.write(content)
+    return {"message": f"{file.filename} uploaded successfully!"}
