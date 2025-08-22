@@ -1,30 +1,28 @@
+// backend/index.js
 import express from "express";
 import cors from "cors";
 
 const app = express();
-app.use(cors());
+const PORT = 5000;
+
+app.use(cors({ origin: "http://localhost:5173" })); // frontend dev server port
 app.use(express.json());
 
-// in-memory array to store submitted names
-let jobs = [];
+let users = []; // in-memory storage for now
 
-app.get("/api/jobs", (req, res) => {
-  res.json(jobs);
+// GET all users
+app.get("/users", (req, res) => {
+  res.json(users);
 });
 
-app.post("/api/jobs", (req, res) => {
+// POST new user
+app.post("/users", (req, res) => {
   const { name } = req.body;
-  if (!name) {
-    return res.status(400).json({ error: "Name is required" });
-  }
-  const newJob = { id: jobs.length + 1, name };
-  jobs.push(newJob);
-  res.status(201).json(newJob);
-});
-app.get("/", (req, res) => {
-  res.send("Backend is running 🚀");
+  if (!name) return res.status(400).json({ message: "Name is required" });
+  users.push({ name });
+  res.status(201).json({ message: "User saved" });
 });
 
-app.listen(5000, () => {
-  console.log("Server running on port 5000");
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
