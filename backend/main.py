@@ -1,44 +1,44 @@
 ﻿from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-import uvicorn, os
+import uvicorn
+import os
 
 app = FastAPI()
 
-# Allow frontend (Vite=5173, CRA=3000)
+# Allow frontend to talk to backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["http://localhost:5173"],  # Vite default port
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-users = []  # in-memory "db"
+# Ensure uploads folder exists
+os.makedirs("uploads", exist_ok=True)
 
-class User(BaseModel):
-    name: str
-
-@app.get("/api/users")
-async def get_users():
-    return users
-
-@app.post("/api/users")
-async def create_user(user: User):
-    new_user = {"id": len(users) + 1, "name": user.name}
-    users.append(new_user)
-    return new_user
+# Store users in memory (replace with DB later)
+users = []
 
 @app.post("/upload/")
-async def upload_resume(file: UploadFile = File(...)):
+async def upload_resume(file: UploadFile = File(...), name: str = ""):
     try:
-        os.makedirs("uploads", exist_ok=True)
+        # Save file
         contents = await file.read()
         with open(f"uploads/{file.filename}", "wb") as f:
             f.write(contents)
-        return {"message": "Upload successful! Resume processed."}
+
+        # Save user
+        if name:
+            users.append({"name": name, "file": file.filename})
+
+        return {"message": f"Upload successful! Resume saved for {name}"}
     except Exception as e:
         return {"message": f"Upload failed: {str(e)}"}
 
+@app.get("/users/")
+def get_users():
+    return {"users": users}
+
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=5000)
