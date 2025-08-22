@@ -1,49 +1,50 @@
-﻿import React, { useState, useEffect } from "react";
+﻿import { Box, Button, Input, VStack, Heading, Text } from "@chakra-ui/react"
+import { useState, useEffect } from "react"
 
 function App() {
-  const [name, setName] = useState("");
-  const [jobs, setJobs] = useState([]);
+  const [name, setName] = useState("")
+  const [users, setUsers] = useState([])
 
-  const fetchJobs = async () => {
-    const response = await fetch("http://localhost:5000/api/jobs");
-    const data = await response.json();
-    setJobs(data);
-  };
+  useEffect(() => {
+    fetch("http://localhost:5000/api/users")
+      .then(res => res.json())
+      .then(data => setUsers(data))
+      .catch(err => console.error(err))
+  }, [])
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    await fetch("http://localhost:5000/api/jobs", {
+  const handleSubmit = async () => {
+    const res = await fetch("http://localhost:5000/api/users", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name }),
-    });
-    setName("");
-    fetchJobs();
-  };
-
-  useEffect(() => {
-    fetchJobs();
-  }, []);
+    })
+    const data = await res.json()
+    setUsers(prev => [...prev, data])
+    setName("")
+  }
 
   return (
-    <div style={{ padding: "2rem" }}>
-      <h1>Job Matcher</h1>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
+    <Box bg="pink.50" minH="100vh" p={8}>
+      <VStack spacing={6}>
+        <Heading color="pink.600">Job Matcher </Heading>
+        <Input
+          placeholder="Enter your name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Enter your name"
         />
-        <button type="submit">Submit</button>
-      </form>
-      <ul>
-        {jobs.map((job, index) => (
-          <li key={index}>{job.name}</li>
-        ))}
-      </ul>
-    </div>
-  );
+        <Button colorScheme="pink" onClick={handleSubmit}>
+          Submit
+        </Button>
+        <VStack spacing={2}>
+          {users.map((u, i) => (
+            <Text key={i} color="pink.800" fontWeight="bold">
+              {u.name}
+            </Text>
+          ))}
+        </VStack>
+      </VStack>
+    </Box>
+  )
 }
 
-export default App;
+export default App

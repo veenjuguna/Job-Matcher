@@ -1,33 +1,30 @@
-import cors from "cors";
 import express from "express";
+import cors from "cors";
 
 const app = express();
 app.use(cors());
-
-const PORT = 5000;
-
-// Middleware
 app.use(express.json());
 
-let resumes = [];
+// in-memory array to store submitted names
+let jobs = [];
 
-// POST request to add a resume
-app.post("/api/resumes", (req, res) => {
-  const newResume = req.body;
-  resumes.push(newResume);
-  res.status(201).json(newResume);
+app.get("/api/jobs", (req, res) => {
+  res.json(jobs);
 });
 
-// GET request to fetch all resumes
-app.get("/api/resumes", (req, res) => {
-  res.json(resumes);
+app.post("/api/jobs", (req, res) => {
+  const { name } = req.body;
+  if (!name) {
+    return res.status(400).json({ error: "Name is required" });
+  }
+  const newJob = { id: jobs.length + 1, name };
+  jobs.push(newJob);
+  res.status(201).json(newJob);
 });
-
-// Default route
 app.get("/", (req, res) => {
-  res.send("Backend is running ✅");
+  res.send("Backend is running 🚀");
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+app.listen(5000, () => {
+  console.log("Server running on port 5000");
 });
