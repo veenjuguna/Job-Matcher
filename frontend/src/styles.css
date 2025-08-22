@@ -1,0 +1,8 @@
+:root {
+  --primary: #ff5ea8;
+  --bg: #fff5fb;
+}
+body { background: var(--bg); }
+.header { text-align:center; padding: 2rem 0; }
+.badge { background: var(--primary); color:white; padding:.25rem .6rem; border-radius:999px; font-size:.75rem; }
+.pink { color: var(--primary); }

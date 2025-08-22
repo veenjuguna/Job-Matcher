@@ -1,10 +1,7 @@
-// src/main.jsx
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { ChakraProvider } from "@chakra-ui/react";
+import { ChakraProvider, theme } from "@chakra-ui/react"; // bring in provider + default theme
 import App from "./App";
-// Import the custom theme
-import theme from "./theme.js"; // <- must be correct path
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
