@@ -1,19 +1,30 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 
-export default function App() {
-  const [file, setFile] = useState(null);
-  const [name, setName] = useState("");
-  const [message, setMessage] = useState("");
+function App() {
+  const [name, setName] = useState('');
   const [users, setUsers] = useState([]);
+  const [message, setMessage] = useState('');
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch("http://localhost:5000/users/");
-      const data = await res.json();
-      setUsers(data.users || []);
+      const res = await axios.get('http://localhost:5000/api/users');
+      setUsers(res.data);
     } catch (err) {
       console.error(err);
-      setMessage("Couldn't load users. Is the backend running on :5000?");
+      setMessage('Could not load users (is the backend running on :5000?)');
+    }
+  };
+
+  const addUser = async () => {
+    try {
+      const res = await axios.post('http://localhost:5000/api/users', { name });
+      setMessage(res.data.message);
+      setName('');
+      fetchUsers();
+    } catch (err) {
+      console.error(err);
+      setMessage('Save failed');
     }
   };
 
@@ -21,69 +32,32 @@ export default function App() {
     fetchUsers();
   }, []);
 
-  const handleFileChange = (e) => setFile(e.target.files[0]);
-  const handleNameChange = (e) => setName(e.target.value);
-
-  const uploadResume = async () => {
-    if (!file || !name) {
-      setMessage("Please enter your name and select a file first!");
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("name", name);
-
-    try {
-      const res = await fetch("http://localhost:5000/upload/", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await res.json();
-      setMessage(data.message);
-      setFile(null);
-      setName("");
-      fetchUsers(); // refresh users list
-    } catch (err) {
-      console.error(err);
-      setMessage("Upload failed");
-    }
-  };
-
   return (
-    <div style={{ fontFamily: "Arial", padding: 20, background: "#ffe6f0", minHeight: "100vh" }}>
-      <h1 style={{ color: "#ff66b2" }}>Job Matcher</h1>
+    <div style={{ padding: '2rem', fontFamily: 'sans-serif', backgroundColor: '#ffe4e6' }}>
+      <h1>Job Matcher 💖</h1>
+      <p>Simple UI, Pink and clean</p>
 
-      <div style={{ marginBottom: 20 }}>
+      <div style={{ margin: '1rem 0' }}>
         <input
           type="text"
-          placeholder="Type your name"
           value={name}
-          onChange={handleNameChange}
-          style={{ padding: 8, borderRadius: 5, border: "1px solid #ffb3d9", marginRight: 8 }}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Type your name"
+          style={{ padding: '0.5rem', marginRight: '0.5rem' }}
         />
-        <input type="file" onChange={handleFileChange} style={{ padding: 8 }} />
-        <button
-          onClick={uploadResume}
-          style={{ padding: "8px 16px", marginLeft: 8, backgroundColor: "#ff66b2", color: "#fff", border: "none", borderRadius: 5 }}
-        >
-          Upload Resume
+        <button onClick={addUser} style={{ padding: '0.5rem 1rem', backgroundColor: '#ec4899', color: 'white', border: 'none', cursor: 'pointer' }}>
+          Add User
         </button>
       </div>
 
-      {message && <p style={{ color: "#d6336c" }}>{message}</p>}
+      {message && <p>{message}</p>}
 
       <h2>Current Users</h2>
-      {users.length === 0 ? (
-        <p>No users yet.</p>
-      ) : (
-        <ul>
-          {users.map((u, idx) => (
-            <li key={idx}>{u.name} - {u.file}</li>
-          ))}
-        </ul>
-      )}
+      <ul>
+        {users.length === 0 ? <li>No users yet.</li> : users.map(u => <li key={u.id}>{u.name}</li>)}
+      </ul>
     </div>
   );
 }
-// src/App.jsx
+
+export default App;
