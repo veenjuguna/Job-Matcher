@@ -1,3 +1,4 @@
+// src/App.jsx
 import Navbar from './Navbar';
 import UploadCard from './UploadCard';
 import ProgressTracker from './ProgressTracker';
